@@ -430,13 +430,18 @@ class MatcheringAdvanced:
     def IS_CHANGED(s, **kwargs):
         return hash(frozenset(kwargs))
 
-    RETURN_TYPES = ("AUDIO", "AUDIO", "AUDIO", "AUDIO")
+    RETURN_TYPES = ("AUDIO", "AUDIO", "AUDIO", "AUDIO", "STRING", "FLOAT", "BOOLEAN", "FLOAT", "INT")
     RETURN_NAMES = (
-        "Result",
-        "Result (no limiter)",
-        "Result (no limiter, normalized)", 
-        "Comparison (Original Method)"
-    )
+    "Result",
+    "Result (no limiter)",
+    "Result (no limiter, normalized)", 
+    "Comparison (Original Method)",
+    "analysis_method",
+    "percentile", 
+    "enable_gating",
+    "gate_threshold_db",
+    "internal_sample_rate"
+)
 
     CATEGORY = "audio/matchering"
     FUNCTION = "matchering_advanced"
@@ -559,11 +564,17 @@ class MatcheringAdvanced:
             {
                 "waveform": torch.from_numpy(result_no_limiter_normalized.T).unsqueeze(0),
                 "sample_rate": reference["sample_rate"],
-            },
+            }, 
             {
                 "waveform": torch.from_numpy(comparison_result.T).unsqueeze(0),
                 "sample_rate": reference["sample_rate"],
             },
+            analysis_method,
+            percentile,
+            enable_gating,
+            gate_threshold_db,
+            internal_sample_rate
+
         )
 
 class MatcheringEnhanced:
@@ -666,32 +677,27 @@ class MatcheringEnhanced:
     def IS_CHANGED(s, **kwargs):
         return hash(frozenset(kwargs))
 
-    RETURN_TYPES = ("AUDIO", "AUDIO", "AUDIO", "AUDIO")
+    RETURN_TYPES = ("AUDIO", "AUDIO", "AUDIO", "AUDIO", "STRING", "FLOAT", "BOOLEAN", "FLOAT", "INT")
     RETURN_NAMES = (
         "Result",
         "Result (no limiter)",
         "Result (no limiter, normalized)", 
-        "Comparison (Original Method)"
+        "Comparison (Original Method)",
+        "analysis_method",      # NEW
+        "percentile",           # NEW
+        "enable_gating",        # NEW
+        "gate_threshold_db",    # NEW
+        "internal_sample_rate"  # NEW
     )
 
     CATEGORY = "audio/matchering"
     FUNCTION = "matchering_enhanced"
 
-    def matchering_enhanced(
-        self,
-        target,
-        reference,
-        analysis_method,
-        percentile,
-        enable_gating,
-        gate_threshold_db,
-        enable_comparison,
-        internal_sample_rate,
-        fft_size,
-        max_length,
-        threshold,
-        limiter_config=LimiterConfig(),
-    ):
+    def matchering_enhanced(self, target, reference, analysis_method, percentile, 
+                          enable_gating, gate_threshold_db, enable_comparison,
+                          internal_sample_rate, fft_size, max_length, threshold, 
+                          limiter_config=LimiterConfig()):
+        
         """Enhanced processing with median spectrum capabilities"""
         log(print)
         
@@ -743,23 +749,28 @@ class MatcheringEnhanced:
             comparison_result = np.zeros_like(result)
 
         return (
-            {
-                "waveform": torch.from_numpy(result.T).unsqueeze(0),
-                "sample_rate": reference["sample_rate"],
-            },
-            {
-                "waveform": torch.from_numpy(result_no_limiter.T).unsqueeze(0),
-                "sample_rate": reference["sample_rate"],
-            },
-            {
-                "waveform": torch.from_numpy(result_no_limiter_normalized.T).unsqueeze(0),
-                "sample_rate": reference["sample_rate"],
-            },
-            {
-                "waveform": torch.from_numpy(comparison_result.T).unsqueeze(0),
-                "sample_rate": reference["sample_rate"],
-            },
-        )
+    {
+        "waveform": torch.from_numpy(result.T).unsqueeze(0),
+        "sample_rate": reference["sample_rate"],
+    },
+    {
+        "waveform": torch.from_numpy(result_no_limiter.T).unsqueeze(0),
+        "sample_rate": reference["sample_rate"],
+    },
+    {
+        "waveform": torch.from_numpy(result_no_limiter_normalized.T).unsqueeze(0),
+        "sample_rate": reference["sample_rate"],
+    },
+    {
+        "waveform": torch.from_numpy(comparison_result.T).unsqueeze(0),
+        "sample_rate": reference["sample_rate"],
+    },
+    analysis_method,        
+    percentile,
+    enable_gating,
+    gate_threshold_db,
+    internal_sample_rate
+)
 
 
 class MatcheringLimiterConfig:
