@@ -352,7 +352,9 @@ def get_fir_enhanced(
         reference_average_fft = __average_fft(
             reference_loudest_pieces, config.internal_sample_rate, config.fft_size, auto_scale_fft
         )
-        
+        fft_diff = target_average_fft - reference_average_fft
+        max_diff = np.max(np.abs(fft_diff))
+        debug(f"FFT max difference: {max_diff}")    
     else:
         # Enhanced approaches - use full audio for true analysis
         debug("Using full audio for enhanced analysis")
@@ -496,7 +498,7 @@ def __match_levels(
         f"or {config.max_piece_size / config.internal_sample_rate:.2f} seconds"
     )
 
-    reference, final_amplitude_coefficient = normalize_reference(reference, config)
+    reference, final_amplitude_coefficient = normalize_reference(reference, config, target)
 
     (
         target_mid,

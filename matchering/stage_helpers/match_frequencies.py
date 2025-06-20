@@ -307,6 +307,8 @@ def get_fir_enhanced(
     percentile: float = 50.0,
     auto_scale_fft: bool = False
 ) -> np.ndarray:
+    
+   
     """
     Enhanced FIR calculation with multiple analysis methods and auto-scaling.
     
@@ -325,6 +327,7 @@ def get_fir_enhanced(
     debug(f"Computing {name} FIR using '{method}' method with auto_scale_fft={auto_scale_fft}")
     debug(f"Config sample rate: {config.internal_sample_rate}")
     debug(f"target_loudest_pieces length: {len(target_loudest_pieces)}")
+    debug(f"=== METHOD CHECK: {method} ===")
     
     if method == "loudest":
         # Original Matchering approach - use pre-selected loud pieces
@@ -334,6 +337,28 @@ def get_fir_enhanced(
         reference_average_fft = __average_fft(
             reference_loudest_pieces, config.internal_sample_rate, config.fft_size, auto_scale_fft
         )
+        # DEBUG: Log FFT differences for identical files
+        debug(f"=== FFT DEBUG {name} ===")
+        debug(f"Target FFT shape: {target_average_fft.shape}")
+        debug(f"Reference FFT shape: {reference_average_fft.shape}")
+
+        # Check for differences (should be zero for identical files)
+        fft_diff = target_average_fft - reference_average_fft
+        max_diff = np.max(np.abs(fft_diff))
+        debug(f"Max FFT difference: {max_diff}")
+
+        # Focus on high frequencies (21kHz area)
+        nyquist = config.internal_sample_rate / 2
+        freq_bins = np.linspace(0, nyquist, len(target_average_fft))
+        high_freq_mask = freq_bins >= 18000  # 18kHz and above
+        high_freq_diff = fft_diff[high_freq_mask]
+        debug(f"High freq (18kHz+) max diff: {np.max(np.abs(high_freq_diff))}")
+
+        # Log specific 21kHz bin if it exists
+        target_21k_bin = int(21000 * len(target_average_fft) / nyquist)
+        if target_21k_bin < len(target_average_fft):
+         debug(f"21kHz bin ({target_21k_bin}): target={target_average_fft[target_21k_bin]:.8f}, ref={reference_average_fft[target_21k_bin]:.8f}, diff={fft_diff[target_21k_bin]:.8f}")
+         #Test with: Two identical 21kHz tone files using "loudest" method. Expected max_diff = 0.
         
     else:
         # Enhanced approaches - use same input as original for fair comparison
@@ -394,6 +419,7 @@ def get_fir(
     Original get_fir function - maintained for backward compatibility.
     Now automatically uses auto-scaling from config.
     """
+    debug(f"=== ORIGINAL GET_FIR: {name} ===")
     debug(f"Calculating the {name} FIR for the matching EQ... (auto_scale_fft={config.auto_scale_fft})")
 
     target_average_fft = __average_fft(
@@ -402,6 +428,17 @@ def get_fir(
     reference_average_fft = __average_fft(
         reference_loudest_pieces, config.internal_sample_rate, config.fft_size, config.auto_scale_fft
     )
+
+    # Add FFT debug code here, BEFORE np.maximum modifies target_average_fft:
+    fft_diff = target_average_fft - reference_average_fft
+    max_diff = np.max(np.abs(fft_diff))
+    debug(f"FFT max difference: {max_diff}")
+
+    # 21kHz bin check
+    nyquist = config.internal_sample_rate / 2
+    bin_21k = int(21000 * len(target_average_fft) / nyquist)
+    if bin_21k < len(target_average_fft):
+        debug(f"21kHz bin: diff={fft_diff[bin_21k]:.8f}")
 
     np.maximum(config.min_value, target_average_fft, out=target_average_fft)
     matching_fft = reference_average_fft / target_average_fft

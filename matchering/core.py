@@ -30,6 +30,7 @@ def process(
     reference_audio,
     config: Config = Config(),
 ):
+    print("=== MATCHERING PROCESS STARTED ===")
     debug_line()
     info(Code.INFO_LOADING)
 

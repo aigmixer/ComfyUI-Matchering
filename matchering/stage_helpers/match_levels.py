@@ -26,8 +26,13 @@ from ..utils import to_db
 from ..dsp import lr_to_ms, size, unfold, batch_rms, rms, amplify, normalize
 
 
-def normalize_reference(reference: np.ndarray, config: Config) -> (np.ndarray, float):
+def normalize_reference(reference: np.ndarray, config: Config, target: np.ndarray = None) -> (np.ndarray, float):
     debug("Normalizing the REFERENCE...")
+    
+    # Skip normalization if target and reference are identical
+    if target is not None and np.array_equal(target, reference):
+        debug("Target and reference are identical - skipping normalization")
+        return reference, 1.0
 
     reference, final_amplitude_coefficient = normalize(
         reference, config.threshold, config.min_value, normalize_clipped=False
