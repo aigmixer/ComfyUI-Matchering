@@ -63,8 +63,8 @@ __en = {
     Code.ERROR_TARGET_EQUALS_REFERENCE: "The TARGET and REFERENCE files are the same. "
     "They must be different so that Matchering makes sense",
     Code.ERROR_REFERENCE_LOADING: "Audio stream error in the REFERENCE file",
-    Code.ERROR_REFERENCE_LENGTH_LENGTH_IS_EXCEEDED: "Track length is exceeded in the REFERENCE file",
-    Code.ERROR_REFERENCE_LENGTH_LENGTH_TOO_SMALL: "The track length is too small in the REFERENCE file",
+    Code.ERROR_REFERENCE_LENGTH_IS_EXCEEDED: "Track length is exceeded in the REFERENCE file", 
+    Code.ERROR_REFERENCE_LENGTH_IS_TOO_SMALL: "The track length is too small in the REFERENCE file",
     Code.ERROR_REFERENCE_NUM_OF_CHANNELS_IS_EXCEEDED: "The number of channels exceeded in the REFERENCE file",
     Code.ERROR_UNKNOWN: "Unknown error",
     Code.ERROR_VALIDATION: "Validation failed! Please let the developers know about this error!",
